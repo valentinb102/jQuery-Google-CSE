@@ -12,6 +12,14 @@
 		<script type="text/javascript" src="js/scripts.js"></script>
 		<script type="text/javascript" src="js/jquery-google-cse.js"></script>
 
+		<script>
+			$(function() {
+
+				$.googleCSE();
+
+			});
+		</script>
+
 	</head>
 	<body>
 		<div id="searchWrapper">
@@ -23,8 +31,7 @@
 				<input id="submit" type="submit" value="Send Request"/>
 			</form>
 
-			<div id="loader"><img class="loaderImg" src="loader.gif" />
-			</div>
+			<div id="loader"></div>
 			<div class="clear"></div>
 			<div id="paginate"></div>
 			<div class="clear"></div>

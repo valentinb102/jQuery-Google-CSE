@@ -106,12 +106,10 @@ img {
 	clear: both;
 }
 #loader {
+	display: none;
 	height: 24px;
 	width: 24px;
-}
-#loader img {
-	float: left;
-	display: none;
+	background: url('../img/loader.gif');
 }
 #searchWrapper {
 	width: 600px;
