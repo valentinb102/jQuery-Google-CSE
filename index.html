@@ -15,7 +15,11 @@
 		<script>
 			$(function() {
 
-				$.googleCSE();
+				$.googleCSE({
+					$form : $('#searchform'),
+					$results : $('#content'),
+					$pagination : $('#paginate')
+				});
 
 			});
 		</script>
