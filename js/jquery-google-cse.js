@@ -40,6 +40,7 @@
 	Plugin.prototype.init = function() {
 		var self = this;
 
+		// form submit
 		self.options.$form.submit(function(e) {
 			e.preventDefault();
 
@@ -47,13 +48,23 @@
 				History.pushState({
 					query : encodeURIComponent(self.options.$input.val()),
 					page : 1
-				}, null, "?query=" + encodeURIComponent(self.options.$input.val()) + "&page=1");
+				}, null, null);
 			}
 		});
 
+		// pagination click
+		self.options.$pagination.on('click', 'a', function(e) {
+			e.preventDefault();
+
+			History.pushState({
+				query : encodeURIComponent($(e.target).data('query')),
+				page : $(e.target).data('page')
+			}, null, null);
+		});
+
+		// monitor state changes
 		History.Adapter.bind(window, 'statechange', function() {
 			var State = History.getState();
-			console.log(State)
 			ajaxSearch(State.data.query, State.data.page);
 		});
 
@@ -66,9 +77,9 @@
 			startIndex = startIndex < 1 ? 0 : Math.floor(startIndex) - 1;
 
 			// make sure the last item has at most 100 results
-			var num = startIndex + self.options.numResults >= 100 ? 100 - startIndex : self.options.numResults;
+			var num = ((startIndex + self.options.numResults >= 100) ? (100 - startIndex) : self.options.numResults);
 
-			$("#loader").show();
+			self.options.$loader.show();
 
 			$.ajax({
 				url : 'https://www.googleapis.com/customsearch/v1element',
@@ -81,7 +92,7 @@
 				},
 				dataType : 'jsonp',
 				success : function(response) {
-					$("#loader").hide();
+					self.options.$loader.hide();
 					self.options.$results.html("");
 					self.options.$pagination.html("");
 
@@ -119,20 +130,31 @@
 						var max = response.cursor.estimatedResultCount > 100 ? 100 / self.options.numResults : response.cursor.estimatedResultCount / self.options.numResults;
 
 						for (var i = 0; i < max; i++) {
-							$("<a/>").addClass("page").html(i + 1).attr("href", "?query=" + query + "&page=" + (i + 1)).appendTo(self.options.$pagination);
+							if (i === startIndex) {
+								var mid = $("<a/>").addClass("page active").html(i + 1).data({
+									'query' : query,
+									'page' : i + 1
+								});
+								mid.appendTo(self.options.$pagination);
+							} else {
+								$("<a/>").addClass("page").html(i + 1).data({
+									'query' : query,
+									'page' : i + 1
+								}).appendTo(self.options.$pagination);
+							}
+
 						}
 
 						// Add active page
 						// google sometimes decides to return a different amount of results than first shown
-						if ($(".page[href='?query=" + query + "&page=" + startIndex + "']").length)
-							var mid = $(".page[href='?query=" + query + "&page=" + startIndex + "']").addClass("active").index();
-						else
+						if (!($(".page.active").length)) {
 							var mid = $(".page:last").addClass("active").index();
+						}
 
 						// Show only numPages number of page links
 						$(".page").each(function(index, value) {
-							if (!(mid - self.options.numPages / 2 < index && index < mid + self.options.numPages / 2 || index + self.options.numPages >= max && index < mid + self.options.numPages / 2 || index - self.options.numPages < 0 && mid - self.options.numPages / 2 < index)) {
-								$(self).remove();
+							if (mid - self.options.numPages / 2 < index && index < mid + self.options.numPages / 2 || index + self.options.numPages >= max && index < mid + self.options.numPages / 2 || index - self.options.numPages < 0 && mid - self.options.numPages / 2 < index) {
+								$(this).remove();
 							}
 						});
 					}
